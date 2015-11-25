@@ -27,4 +27,10 @@ idea {
 
 apply plugin: 'jacoco'
 
+apply plugin: 'findbugs'
+
+findbugs {
+       ignoreFailures = true
+}
+
 /* vim: set ts=4 sw=4 et: */
