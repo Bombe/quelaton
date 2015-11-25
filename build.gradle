@@ -1,3 +1,6 @@
+group = 'net.pterodactylus'
+version = '0.1-SNAPSHOT'
+
 apply plugin: 'java'
 
 repositories {
