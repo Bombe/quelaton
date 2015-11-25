@@ -7,4 +7,13 @@ repositories {
 dependencies {
 }
 
+apply plugin: 'idea'
+
+idea {
+    project {
+        jdkName = '1.8'
+        languageLevel = '1.8'
+    }
+}
+
 /* vim: set ts=4 sw=4 et: */
