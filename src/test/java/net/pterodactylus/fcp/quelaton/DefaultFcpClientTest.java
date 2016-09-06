@@ -296,62 +296,6 @@ public class DefaultFcpClientTest {
 
 		public class PeerCommands {
 
-			public class ListPeers {
-
-				@Test
-				public void withoutMetadataOrVolatile() throws IOException, ExecutionException, InterruptedException {
-					Future<Collection<Peer>> peers = fcpClient.listPeers().execute();
-					connectAndAssert(() -> matchesListPeers(false, false));
-					replyWithPeer("id1");
-					replyWithPeer("id2");
-					sendEndOfPeerList();
-					assertThat(peers.get(), hasSize(2));
-					assertThat(peers.get().stream().map(Peer::getIdentity).collect(Collectors.toList()),
-						containsInAnyOrder("id1", "id2"));
-				}
-
-				@Test
-				public void withMetadata() throws IOException, ExecutionException, InterruptedException {
-					Future<Collection<Peer>> peers = fcpClient.listPeers().includeMetadata().execute();
-					connectAndAssert(() -> matchesListPeers(false, true));
-					replyWithPeer("id1", "metadata.foo=bar1");
-					replyWithPeer("id2", "metadata.foo=bar2");
-					sendEndOfPeerList();
-					assertThat(peers.get(), hasSize(2));
-					assertThat(peers.get().stream().map(peer -> peer.getMetadata("foo")).collect(Collectors.toList()),
-						containsInAnyOrder("bar1", "bar2"));
-				}
-
-				@Test
-				public void withVolatile() throws IOException, ExecutionException, InterruptedException {
-					Future<Collection<Peer>> peers = fcpClient.listPeers().includeVolatile().execute();
-					connectAndAssert(() -> matchesListPeers(true, false));
-					replyWithPeer("id1", "volatile.foo=bar1");
-					replyWithPeer("id2", "volatile.foo=bar2");
-					sendEndOfPeerList();
-					assertThat(peers.get(), hasSize(2));
-					assertThat(peers.get().stream().map(peer -> peer.getVolatile("foo")).collect(Collectors.toList()),
-						containsInAnyOrder("bar1", "bar2"));
-				}
-
-				private Matcher<List<String>> matchesListPeers(boolean withVolatile, boolean withMetadata) {
-					return matchesFcpMessage(
-						"ListPeers",
-						"WithVolatile=" + withVolatile,
-						"WithMetadata=" + withMetadata
-					);
-				}
-
-				private void sendEndOfPeerList() throws IOException {
-					fcpServer.writeLine(
-						"EndListPeers",
-						"Identifier=" + identifier,
-						"EndMessage"
-					);
-				}
-
-			}
-
 			public class AddPeer {
 
 				@Test
