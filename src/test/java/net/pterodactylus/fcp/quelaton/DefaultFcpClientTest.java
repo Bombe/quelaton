@@ -282,21 +282,6 @@ public class DefaultFcpClientTest {
 
 		}
 
-		public class GenerateKeyPair {
-
-			@Test
-			public void defaultFcpClientCanGenerateKeypair()
-			throws ExecutionException, InterruptedException, IOException {
-				Future<FcpKeyPair> keyPairFuture = fcpClient.generateKeypair().execute();
-				connectAndAssert(() -> matchesFcpMessage("GenerateSSK"));
-				replyWithKeyPair();
-				FcpKeyPair keyPair = keyPairFuture.get();
-				assertThat(keyPair.getPublicKey(), is(REQUEST_URI));
-				assertThat(keyPair.getPrivateKey(), is(INSERT_URI));
-			}
-
-		}
-
 		private void replyWithKeyPair() throws IOException {
 			fcpServer.writeLine("SSKKeypair",
 				"InsertURI=" + INSERT_URI + "",
