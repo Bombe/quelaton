@@ -296,50 +296,6 @@ public class DefaultFcpClientTest {
 
 		public class PeerCommands {
 
-			public class ListPeer {
-
-				@Test
-				public void byIdentity() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<Peer>> peer = fcpClient.listPeer().byIdentity("id1").execute();
-					connectAndAssert(() -> matchesListPeer("id1"));
-					replyWithPeer("id1");
-					assertThat(peer.get().get().getIdentity(), is("id1"));
-				}
-
-				@Test
-				public void byHostAndPort() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<Peer>> peer = fcpClient.listPeer().byHostAndPort("host.free.net", 12345).execute();
-					connectAndAssert(() -> matchesListPeer("host.free.net:12345"));
-					replyWithPeer("id1");
-					assertThat(peer.get().get().getIdentity(), is("id1"));
-				}
-
-				@Test
-				public void byName() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<Peer>> peer = fcpClient.listPeer().byName("FriendNode").execute();
-					connectAndAssert(() -> matchesListPeer("FriendNode"));
-					replyWithPeer("id1");
-					assertThat(peer.get().get().getIdentity(), is("id1"));
-				}
-
-				@Test
-				public void unknownNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<Peer>> peer = fcpClient.listPeer().byIdentity("id2").execute();
-					connectAndAssert(() -> matchesListPeer("id2"));
-					replyWithUnknownNodeIdentifier();
-					assertThat(peer.get().isPresent(), is(false));
-				}
-
-				private Matcher<List<String>> matchesListPeer(String nodeId) {
-					return matchesFcpMessage(
-						"ListPeer",
-						"Identifier=" + identifier,
-						"NodeIdentifier=" + nodeId
-					);
-				}
-
-			}
-
 			public class ListPeers {
 
 				@Test
