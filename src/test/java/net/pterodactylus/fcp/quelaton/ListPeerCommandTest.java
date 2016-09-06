@@ -10,10 +10,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.pterodactylus.fcp.Peer;
-import net.pterodactylus.fcp.test.WithFcp;
+import net.pterodactylus.fcp.test.AbstractClientCommandTest;
 
 import org.hamcrest.Matcher;
-import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -21,10 +20,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
-public class ListPeerCommandTest {
-
-	@Rule
-	public final WithFcp fcp = new WithFcp();
+public class ListPeerCommandTest extends AbstractClientCommandTest {
 
 	@Test
 	public void byIdentity() throws InterruptedException, ExecutionException, IOException {

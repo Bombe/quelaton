@@ -7,9 +7,8 @@ import java.io.IOException;
 import java.util.concurrent.Future;
 
 import net.pterodactylus.fcp.FcpKeyPair;
-import net.pterodactylus.fcp.test.WithFcp;
+import net.pterodactylus.fcp.test.AbstractClientCommandTest;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -17,10 +16,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
-public class GenerateKeypairCommandTest {
-
-	@Rule
-	public final WithFcp fcp = new WithFcp();
+public class GenerateKeypairCommandTest extends AbstractClientCommandTest {
 
 	private static final String INSERT_URI = "SSK@RVCHbJdkkyTCeNN9AYukEg76eyqmiosSaNKgE3U9zUw,7SHH53gletBVb9JD7nBsyClbLQsBubDPEIcwg908r7Y,AQECAAE/";
 	private static final String REQUEST_URI = "SSK@wtbgd2loNcJCXvtQVOftl2tuWBomDQHfqS6ytpPRhfw,7SHH53gletBVb9JD7nBsyClbLQsBubDPEIcwg908r7Y,AQACAAE/";
