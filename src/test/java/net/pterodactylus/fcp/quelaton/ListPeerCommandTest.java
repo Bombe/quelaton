@@ -24,48 +24,48 @@ public class ListPeerCommandTest extends AbstractPeerCommandTest {
 
 	@Test
 	public void byIdentity() throws InterruptedException, ExecutionException, IOException {
-		Future<Optional<Peer>> peer = fcp.client().listPeer().byIdentity("id1").execute();
-		fcp.connectAndAssert(() -> matchesListPeer("id1"));
+		Future<Optional<Peer>> peer = client().listPeer().byIdentity("id1").execute();
+		connectAndAssert(() -> matchesListPeer("id1"));
 		replyWithPeer("id1");
 		assertThat(peer.get().get().getIdentity(), is("id1"));
 	}
 
 	@Test
 	public void byHostAndPort() throws InterruptedException, ExecutionException, IOException {
-		Future<Optional<Peer>> peer = fcp.client().listPeer().byHostAndPort("host.free.net", 12345).execute();
-		fcp.connectAndAssert(() -> matchesListPeer("host.free.net:12345"));
+		Future<Optional<Peer>> peer = client().listPeer().byHostAndPort("host.free.net", 12345).execute();
+		connectAndAssert(() -> matchesListPeer("host.free.net:12345"));
 		replyWithPeer("id1");
 		assertThat(peer.get().get().getIdentity(), is("id1"));
 	}
 
 	@Test
 	public void byName() throws InterruptedException, ExecutionException, IOException {
-		Future<Optional<Peer>> peer = fcp.client().listPeer().byName("FriendNode").execute();
-		fcp.connectAndAssert(() -> matchesListPeer("FriendNode"));
+		Future<Optional<Peer>> peer = client().listPeer().byName("FriendNode").execute();
+		connectAndAssert(() -> matchesListPeer("FriendNode"));
 		replyWithPeer("id1");
 		assertThat(peer.get().get().getIdentity(), is("id1"));
 	}
 
 	@Test
 	public void unknownNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
-		Future<Optional<Peer>> peer = fcp.client().listPeer().byIdentity("id2").execute();
-		fcp.connectAndAssert(() -> matchesListPeer("id2"));
+		Future<Optional<Peer>> peer = client().listPeer().byIdentity("id2").execute();
+		connectAndAssert(() -> matchesListPeer("id2"));
 		replyWithUnknownNodeIdentifier();
 		assertThat(peer.get().isPresent(), is(false));
 	}
 
 	private Matcher<List<String>> matchesListPeer(String nodeId) {
-		return fcp.matchesFcpMessage(
+		return matchesFcpMessage(
 				"ListPeer",
-				"Identifier=" + fcp.identifier(),
+				"Identifier=" + identifier(),
 				"NodeIdentifier=" + nodeId
 		);
 	}
 
 	private void replyWithUnknownNodeIdentifier() throws IOException {
-		fcp.answer(
+		answer(
 				"UnknownNodeIdentifier",
-				"Identifier=" + fcp.identifier(),
+				"Identifier=" + identifier(),
 				"NodeIdentifier=id2",
 				"EndMessage"
 		);

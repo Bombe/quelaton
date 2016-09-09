@@ -26,8 +26,8 @@ public class ListPeersCommandTest extends AbstractPeerCommandTest {
 
 	@Test
 	public void withoutMetadataOrVolatile() throws IOException, ExecutionException, InterruptedException {
-		Future<Collection<Peer>> peers = fcp.client().listPeers().execute();
-		fcp.connectAndAssert(() -> matchesListPeers(false, false));
+		Future<Collection<Peer>> peers = client().listPeers().execute();
+		connectAndAssert(() -> matchesListPeers(false, false));
 		replyWithPeer("id1");
 		replyWithPeer("id2");
 		sendEndOfPeerList();
@@ -37,8 +37,8 @@ public class ListPeersCommandTest extends AbstractPeerCommandTest {
 
 	@Test
 	public void withMetadata() throws IOException, ExecutionException, InterruptedException {
-		Future<Collection<Peer>> peers = fcp.client().listPeers().includeMetadata().execute();
-		fcp.connectAndAssert(() -> matchesListPeers(false, true));
+		Future<Collection<Peer>> peers = client().listPeers().includeMetadata().execute();
+		connectAndAssert(() -> matchesListPeers(false, true));
 		replyWithPeer("id1", "metadata.foo=bar1");
 		replyWithPeer("id2", "metadata.foo=bar2");
 		sendEndOfPeerList();
@@ -48,8 +48,8 @@ public class ListPeersCommandTest extends AbstractPeerCommandTest {
 
 	@Test
 	public void withVolatile() throws IOException, ExecutionException, InterruptedException {
-		Future<Collection<Peer>> peers = fcp.client().listPeers().includeVolatile().execute();
-		fcp.connectAndAssert(() -> matchesListPeers(true, false));
+		Future<Collection<Peer>> peers = client().listPeers().includeVolatile().execute();
+		connectAndAssert(() -> matchesListPeers(true, false));
 		replyWithPeer("id1", "volatile.foo=bar1");
 		replyWithPeer("id2", "volatile.foo=bar2");
 		sendEndOfPeerList();
@@ -58,7 +58,7 @@ public class ListPeersCommandTest extends AbstractPeerCommandTest {
 	}
 
 	private Matcher<List<String>> matchesListPeers(boolean withVolatile, boolean withMetadata) {
-		return fcp.matchesFcpMessage(
+		return matchesFcpMessage(
 				"ListPeers",
 				"WithVolatile=" + withVolatile,
 				"WithMetadata=" + withMetadata
@@ -66,9 +66,9 @@ public class ListPeersCommandTest extends AbstractPeerCommandTest {
 	}
 
 	private void sendEndOfPeerList() throws IOException {
-		fcp.answer(
+		answer(
 				"EndListPeers",
-				"Identifier=" + fcp.identifier(),
+				"Identifier=" + identifier(),
 				"EndMessage"
 		);
 	}

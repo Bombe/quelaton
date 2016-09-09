@@ -23,8 +23,8 @@ public class GenerateKeypairCommandTest extends AbstractClientCommandTest {
 
 	@Test
 	public void defaultFcpClientCanGenerateKeypair() throws Exception {
-		Future<FcpKeyPair> keyPairFuture = fcp.client().generateKeypair().execute();
-		fcp.connectAndAssert(() -> fcp.matchesFcpMessage("GenerateSSK"));
+		Future<FcpKeyPair> keyPairFuture = client().generateKeypair().execute();
+		connectAndAssert(() -> matchesFcpMessage("GenerateSSK"));
 		replyWithKeyPair();
 		FcpKeyPair keyPair = keyPairFuture.get();
 		assertThat(keyPair.getPublicKey(), is(REQUEST_URI));
@@ -32,10 +32,10 @@ public class GenerateKeypairCommandTest extends AbstractClientCommandTest {
 	}
 
 	private void replyWithKeyPair() throws IOException {
-		fcp.answer("SSKKeypair",
+		answer("SSKKeypair",
 				"InsertURI=" + INSERT_URI + "",
 				"RequestURI=" + REQUEST_URI + "",
-				"Identifier=" + fcp.identifier(),
+				"Identifier=" + identifier(),
 				"EndMessage");
 	}
 

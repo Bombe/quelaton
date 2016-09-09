@@ -10,9 +10,9 @@ import java.io.IOException;
 public class AbstractPeerCommandTest extends AbstractClientCommandTest {
 
 	protected void replyWithPeer(String peerId, String... additionalLines) throws IOException {
-		fcp.answer(
+		answer(
 				"Peer",
-				"Identifier=" + fcp.identifier(),
+				"Identifier=" + identifier(),
 				"identity=" + peerId,
 				"opennet=false",
 				"ark.pubURI=SSK@3YEf.../ark",
@@ -21,8 +21,8 @@ public class AbstractPeerCommandTest extends AbstractClientCommandTest {
 				"version=Fred,0.7,1.0,1466",
 				"lastGoodVersion=Fred,0.7,1.0,1466"
 		);
-		fcp.answer(additionalLines);
-		fcp.answer("EndMessage");
+		answer(additionalLines);
+		answer("EndMessage");
 	}
 
 }

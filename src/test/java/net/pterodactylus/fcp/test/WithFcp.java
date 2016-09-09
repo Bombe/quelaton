@@ -27,7 +27,7 @@ import org.junit.rules.ExternalResource;
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
-public class WithFcp extends ExternalResource {
+public class WithFcp implements AutoCloseable {
 
 	private int threadCounter = 0;
 	private final ExecutorService threadPool = Executors.newCachedThreadPool(r -> new Thread(r, "Test-Thread-" + threadCounter++));
@@ -181,12 +181,8 @@ public class WithFcp extends ExternalResource {
 	}
 
 	@Override
-	protected void after() {
-		try {
-			fcpServer.close();
-		} catch (IOException e) {
-			/* ignore. */
-		}
+	public void close() throws IOException {
+		fcpServer.close();
 		threadPool.shutdown();
 	}
 
