@@ -16,14 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import net.pterodactylus.fcp.ConfigData;
@@ -273,84 +269,6 @@ public class DefaultFcpClientTest {
 				"RequestURI=" + REQUEST_URI + "",
 				"Identifier=" + identifier,
 				"EndMessage");
-		}
-
-	}
-
-	public class UskSubscriptionCommands {
-
-		private static final String URI = "USK@some,uri/file.txt";
-
-		@Test
-		public void subscriptionWorks() throws InterruptedException, ExecutionException, IOException {
-			Future<Optional<UskSubscription>> uskSubscription = fcpClient.subscribeUsk().uri(URI).execute();
-			connectAndAssert(() -> matchesFcpMessage("SubscribeUSK", "URI=" + URI));
-			replyWithSubscribed();
-			assertThat(uskSubscription.get().get().getUri(), is(URI));
-			AtomicInteger edition = new AtomicInteger();
-			CountDownLatch updated = new CountDownLatch(2);
-			uskSubscription.get().get().onUpdate(e -> {
-				edition.set(e);
-				updated.countDown();
-			});
-			sendUpdateNotification(23);
-			sendUpdateNotification(24);
-			assertThat("updated in time", updated.await(5, TimeUnit.SECONDS), is(true));
-			assertThat(edition.get(), is(24));
-		}
-
-		@Test
-		public void subscriptionUpdatesMultipleTimes() throws InterruptedException, ExecutionException, IOException {
-			Future<Optional<UskSubscription>> uskSubscription = fcpClient.subscribeUsk().uri(URI).execute();
-			connectAndAssert(() -> matchesFcpMessage("SubscribeUSK", "URI=" + URI));
-			replyWithSubscribed();
-			assertThat(uskSubscription.get().get().getUri(), is(URI));
-			AtomicInteger edition = new AtomicInteger();
-			CountDownLatch updated = new CountDownLatch(2);
-			uskSubscription.get().get().onUpdate(e -> {
-				edition.set(e);
-				updated.countDown();
-			});
-			uskSubscription.get().get().onUpdate(e -> updated.countDown());
-			sendUpdateNotification(23);
-			assertThat("updated in time", updated.await(5, TimeUnit.SECONDS), is(true));
-			assertThat(edition.get(), is(23));
-		}
-
-		@Test
-		public void subscriptionCanBeCancelled() throws InterruptedException, ExecutionException, IOException {
-			Future<Optional<UskSubscription>> uskSubscription = fcpClient.subscribeUsk().uri(URI).execute();
-			connectAndAssert(() -> matchesFcpMessage("SubscribeUSK", "URI=" + URI));
-			String originalIdentifier = identifier;
-			replyWithSubscribed();
-			assertThat(uskSubscription.get().get().getUri(), is(URI));
-			AtomicBoolean updated = new AtomicBoolean();
-			uskSubscription.get().get().onUpdate(e -> updated.set(true));
-			uskSubscription.get().get().cancel();
-			readMessage(() -> matchesFcpMessage("UnsubscribeUSK", "Identifier=" + originalIdentifier));
-			sendUpdateNotification(23);
-			assertThat(updated.get(), is(false));
-		}
-
-		private void replyWithSubscribed() throws IOException {
-			fcpServer.writeLine(
-				"SubscribedUSK",
-				"Identifier=" + identifier,
-				"URI=" + URI,
-				"DontPoll=false",
-				"EndMessage"
-			);
-		}
-
-		private void sendUpdateNotification(int edition, String... additionalLines) throws IOException {
-			fcpServer.writeLine(
-				"SubscribedUSKUpdate",
-				"Identifier=" + identifier,
-				"URI=" + URI,
-				"Edition=" + edition
-			);
-			fcpServer.writeLine(additionalLines);
-			fcpServer.writeLine("EndMessage");
 		}
 
 	}

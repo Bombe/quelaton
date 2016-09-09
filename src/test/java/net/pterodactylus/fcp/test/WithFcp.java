@@ -86,11 +86,11 @@ public class WithFcp implements AutoCloseable {
 		);
 	}
 
-	private void readMessage(Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
+	public void readMessage(Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
 		readMessage("EndMessage", requestMatcher);
 	}
 
-	private void readMessage(String terminator, Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
+	public void readMessage(String terminator, Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
 		lines = fcpServer.collectUntil(is(terminator));
 		identifier = extractIdentifier(lines);
 		assertThat(lines, requestMatcher.get());

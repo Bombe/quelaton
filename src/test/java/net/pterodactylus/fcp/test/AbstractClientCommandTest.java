@@ -39,6 +39,14 @@ public class AbstractClientCommandTest {
 		fcp.connectAndAssert(requestMatcher);
 	}
 
+	public void readMessage(Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
+		fcp.readMessage(requestMatcher);
+	}
+
+	public void readMessage(String terminator, Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
+		fcp.readMessage(terminator, requestMatcher);
+	}
+
 	public Matcher<List<String>> matchesFcpMessage(String name, String... requiredLines) {
 		return fcp.matchesFcpMessage(name, requiredLines);
 	}
