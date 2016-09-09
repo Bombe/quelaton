@@ -33,7 +33,6 @@ import net.pterodactylus.fcp.ConfigData;
 import net.pterodactylus.fcp.FcpKeyPair;
 import net.pterodactylus.fcp.Key;
 import net.pterodactylus.fcp.NodeData;
-import net.pterodactylus.fcp.PeerNote;
 import net.pterodactylus.fcp.PluginInfo;
 import net.pterodactylus.fcp.Priority;
 import net.pterodactylus.fcp.RequestProgress;
@@ -285,75 +284,6 @@ public class DefaultFcpClientTest {
 	public class Peers {
 
 		public class PeerNoteCommands {
-
-			public class ListPeerNotes {
-
-				@Test
-				public void onUnknownNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<PeerNote>> peerNote = fcpClient.listPeerNotes().byName("Friend1").execute();
-					connectAndAssert(() -> matchesListPeerNotes("Friend1"));
-					replyWithUnknownNodeIdentifier();
-					assertThat(peerNote.get().isPresent(), is(false));
-				}
-
-				@Test
-				public void byNodeName() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<PeerNote>> peerNote = fcpClient.listPeerNotes().byName("Friend1").execute();
-					connectAndAssert(() -> matchesListPeerNotes("Friend1"));
-					replyWithPeerNote();
-					replyWithEndListPeerNotes();
-					assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
-					assertThat(peerNote.get().get().getPeerNoteType(), is(1));
-				}
-
-				@Test
-				public void byNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<PeerNote>> peerNote = fcpClient.listPeerNotes().byIdentity("id1").execute();
-					connectAndAssert(() -> matchesListPeerNotes("id1"));
-					replyWithPeerNote();
-					replyWithEndListPeerNotes();
-					assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
-					assertThat(peerNote.get().get().getPeerNoteType(), is(1));
-				}
-
-				@Test
-				public void byHostAndPort() throws InterruptedException, ExecutionException, IOException {
-					Future<Optional<PeerNote>> peerNote =
-						fcpClient.listPeerNotes().byHostAndPort("1.2.3.4", 5678).execute();
-					connectAndAssert(() -> matchesListPeerNotes("1.2.3.4:5678"));
-					replyWithPeerNote();
-					replyWithEndListPeerNotes();
-					assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
-					assertThat(peerNote.get().get().getPeerNoteType(), is(1));
-				}
-
-				private Matcher<List<String>> matchesListPeerNotes(String nodeIdentifier) {
-					return matchesFcpMessage(
-						"ListPeerNotes",
-						"NodeIdentifier=" + nodeIdentifier
-					);
-				}
-
-				private void replyWithEndListPeerNotes() throws IOException {
-					fcpServer.writeLine(
-						"EndListPeerNotes",
-						"Identifier=" + identifier,
-						"EndMessage"
-					);
-				}
-
-				private void replyWithPeerNote() throws IOException {
-					fcpServer.writeLine(
-						"PeerNote",
-						"Identifier=" + identifier,
-						"NodeIdentifier=Friend1",
-						"NoteText=RXhhbXBsZSBUZXh0Lg==",
-						"PeerNoteType=1",
-						"EndMessage"
-					);
-				}
-
-			}
 
 			public class ModifyPeerNotes {
 
