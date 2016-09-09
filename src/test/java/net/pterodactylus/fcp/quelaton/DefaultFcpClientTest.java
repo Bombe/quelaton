@@ -309,65 +309,6 @@ public class DefaultFcpClientTest {
 			assertThat(pluginInfo.get().get().isStarted(), is(true));
 		}
 
-		public class ReloadPlugin {
-
-			@Test
-			public void reloadingPluginWorks() throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo = fcpClient.reloadPlugin().plugin(CLASS_NAME).execute();
-				connectAndAssert(this::matchReloadPluginMessage);
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void reloadingPluginWithMaxWaitTimeWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo =
-					fcpClient.reloadPlugin().waitFor(1234).plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchReloadPluginMessage(), hasItem("MaxWaitTime=1234")));
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void reloadingPluginWithPurgeWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo =
-					fcpClient.reloadPlugin().purge().plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchReloadPluginMessage(), hasItem("Purge=true")));
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void reloadingPluginWithStoreWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo =
-					fcpClient.reloadPlugin().addToConfig().plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchReloadPluginMessage(), hasItem("Store=true")));
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void protocolErrorIsRecognizedAsFailure()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo = fcpClient.reloadPlugin().plugin(CLASS_NAME).execute();
-				connectAndAssert(this::matchReloadPluginMessage);
-				replyWithProtocolError();
-				assertThat(pluginInfo.get().isPresent(), is(false));
-			}
-
-			private Matcher<List<String>> matchReloadPluginMessage() {
-				return matchesFcpMessage(
-					"ReloadPlugin",
-					"Identifier=" + identifier,
-					"PluginName=" + CLASS_NAME
-				);
-			}
-
-		}
-
 		public class RemovePlugin {
 
 			@Test
