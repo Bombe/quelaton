@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +28,6 @@ import net.pterodactylus.fcp.NodeData;
 import net.pterodactylus.fcp.RequestProgress;
 import net.pterodactylus.fcp.fake.FakeTcpServer;
 
-import com.google.common.io.Files;
 import com.nitorcreations.junit.runners.NestedRunner;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -344,130 +342,6 @@ public class DefaultFcpClientTest {
 					matchesFcpMessage("ClientPut", "UploadFrom=disk", "URI=KSK@foo.txt", "Filename=/tmp/data.txt"));
 			}
 
-			public class DDA {
-
-				private final File ddaFile;
-				private final File fileToUpload;
-
-				public DDA() throws IOException {
-					ddaFile = createDdaFile();
-					fileToUpload = new File(ddaFile.getParent(), "test.dat");
-				}
-
-				private Matcher<List<String>> matchesFileClientPut(File file) {
-					return matchesFcpMessage("ClientPut", "UploadFrom=disk", "URI=KSK@foo.txt", "Filename=" + file);
-				}
-
-				@Test
-				public void completeDda() throws IOException, ExecutionException, InterruptedException {
-					fcpClient.clientPut().from(fileToUpload).uri("KSK@foo.txt").execute();
-					connectAndAssert(() -> matchesFileClientPut(fileToUpload));
-					sendDdaRequired(identifier);
-					readMessage(() -> matchesTestDDARequest(ddaFile));
-					sendTestDDAReply(ddaFile.getParent(), ddaFile);
-					readMessage(() -> matchesTestDDAResponse(ddaFile));
-					writeTestDDAComplete(ddaFile);
-					readMessage(() -> matchesFileClientPut(fileToUpload));
-				}
-
-				@Test
-				public void ignoreOtherDda() throws IOException, ExecutionException, InterruptedException {
-					fcpClient.clientPut().from(fileToUpload).uri("KSK@foo.txt").execute();
-					connectAndAssert(() -> matchesFileClientPut(fileToUpload));
-					sendDdaRequired(identifier);
-					readMessage(() -> matchesTestDDARequest(ddaFile));
-					sendTestDDAReply("/some-other-directory", ddaFile);
-					sendTestDDAReply(ddaFile.getParent(), ddaFile);
-					readMessage(() -> matchesTestDDAResponse(ddaFile));
-				}
-
-				@Test
-				public void sendResponseIfFileUnreadable()
-				throws IOException, ExecutionException, InterruptedException {
-					fcpClient.clientPut().from(fileToUpload).uri("KSK@foo.txt").execute();
-					connectAndAssert(() -> matchesFileClientPut(fileToUpload));
-					sendDdaRequired(identifier);
-					readMessage(() -> matchesTestDDARequest(ddaFile));
-					sendTestDDAReply(ddaFile.getParent(), new File(ddaFile + ".foo"));
-					readMessage(this::matchesFailedToReadResponse);
-				}
-
-				@Test
-				public void clientPutDoesNotResendOriginalClientPutOnTestDDACompleteWithWrongDirectory()
-				throws IOException, ExecutionException, InterruptedException {
-					fcpClient.clientPut().from(fileToUpload).uri("KSK@foo.txt").execute();
-					connectNode();
-					List<String> lines = fcpServer.collectUntil(is("EndMessage"));
-					String identifier = extractIdentifier(lines);
-					fcpServer.writeLine(
-						"TestDDAComplete",
-						"Directory=/some-other-directory",
-						"EndMessage"
-					);
-					sendDdaRequired(identifier);
-					lines = fcpServer.collectUntil(is("EndMessage"));
-					assertThat(lines, matchesFcpMessage(
-						"TestDDARequest",
-						"Directory=" + ddaFile.getParent(),
-						"WantReadDirectory=true",
-						"WantWriteDirectory=false"
-					));
-				}
-
-				private Matcher<List<String>> matchesFailedToReadResponse() {
-					return matchesFcpMessage(
-						"TestDDAResponse",
-						"Directory=" + ddaFile.getParent(),
-						"ReadContent=failed-to-read"
-					);
-				}
-
-				private void writeTestDDAComplete(File tempFile) throws IOException {
-					fcpServer.writeLine(
-						"TestDDAComplete",
-						"Directory=" + tempFile.getParent(),
-						"ReadDirectoryAllowed=true",
-						"EndMessage"
-					);
-				}
-
-				private Matcher<List<String>> matchesTestDDAResponse(File tempFile) {
-					return matchesFcpMessage(
-						"TestDDAResponse",
-						"Directory=" + tempFile.getParent(),
-						"ReadContent=test-content"
-					);
-				}
-
-				private void sendTestDDAReply(String directory, File tempFile) throws IOException {
-					fcpServer.writeLine(
-						"TestDDAReply",
-						"Directory=" + directory,
-						"ReadFilename=" + tempFile,
-						"EndMessage"
-					);
-				}
-
-				private Matcher<List<String>> matchesTestDDARequest(File tempFile) {
-					return matchesFcpMessage(
-						"TestDDARequest",
-						"Directory=" + tempFile.getParent(),
-						"WantReadDirectory=true",
-						"WantWriteDirectory=false"
-					);
-				}
-
-				private void sendDdaRequired(String identifier) throws IOException {
-					fcpServer.writeLine(
-						"ProtocolError",
-						"Identifier=" + identifier,
-						"Code=25",
-						"EndMessage"
-					);
-				}
-
-			}
-
 			private void replyWithPutFailed(String identifier) throws IOException {
 				fcpServer.writeLine(
 					"PutFailed",
@@ -485,13 +359,6 @@ public class DefaultFcpClientTest {
 					hasParameters(1, 2, lines.toArray(new String[lines.size()])),
 					hasTail("EndMessage", "Hello")
 				);
-			}
-
-			private File createDdaFile() throws IOException {
-				File tempFile = File.createTempFile("test-dda-", ".dat");
-				tempFile.deleteOnExit();
-				Files.write("test-content", tempFile, StandardCharsets.UTF_8);
-				return tempFile;
 			}
 
 			@Test

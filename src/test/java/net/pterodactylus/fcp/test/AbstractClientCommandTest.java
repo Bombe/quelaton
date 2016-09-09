@@ -35,8 +35,20 @@ public class AbstractClientCommandTest {
 		fcp.answer(reply);
 	}
 
+	public void connectNode() throws InterruptedException, ExecutionException, IOException {
+		fcp.connectNode();
+	}
+
 	public void connectAndAssert(Supplier<Matcher<List<String>>> requestMatcher) throws InterruptedException, ExecutionException, IOException {
 		fcp.connectAndAssert(requestMatcher);
+	}
+
+	public String extractIdentifier(List<String> lines) {
+		return fcp.extractIdentifier(lines);
+	}
+
+	public List<String> collectUntil(Matcher<String> lineMatcher) throws IOException {
+		return fcp.collectUntil(lineMatcher);
 	}
 
 	public void readMessage(Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
@@ -73,6 +85,10 @@ public class AbstractClientCommandTest {
 				"Identifier=" + identifier(),
 				"EndMessage"
 		);
+	}
+
+	public void closeFcpServer() throws IOException {
+		fcp.close();
 	}
 
 	@After

@@ -67,7 +67,7 @@ public class WithFcp implements AutoCloseable {
 		readMessage(requestMatcher);
 	}
 
-	private void connectNode() throws InterruptedException, ExecutionException, IOException {
+	public void connectNode() throws InterruptedException, ExecutionException, IOException {
 		fcpServer.connect().get();
 		fcpServer.collectUntil(is("EndMessage"));
 		fcpServer.writeLine("NodeHello",
@@ -86,6 +86,10 @@ public class WithFcp implements AutoCloseable {
 		);
 	}
 
+	public List<String> collectUntil(Matcher<String> lineMatcher) throws IOException {
+		return fcpServer.collectUntil(lineMatcher);
+	}
+
 	public void readMessage(Supplier<Matcher<List<String>>> requestMatcher) throws IOException {
 		readMessage("EndMessage", requestMatcher);
 	}
@@ -96,7 +100,7 @@ public class WithFcp implements AutoCloseable {
 		assertThat(lines, requestMatcher.get());
 	}
 
-	private String extractIdentifier(List<String> lines) {
+	public String extractIdentifier(List<String> lines) {
 		return lines.stream()
 				.filter(s -> s.startsWith("Identifier="))
 				.map(s -> s.substring(s.indexOf('=') + 1))
