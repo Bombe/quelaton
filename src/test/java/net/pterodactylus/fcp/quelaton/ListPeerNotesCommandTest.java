@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.pterodactylus.fcp.PeerNote;
-import net.pterodactylus.fcp.test.AbstractPeerCommandTest;
+import net.pterodactylus.fcp.test.AbstractPeerNotesCommandTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
-public class ListPeerNotesCommandTest extends AbstractPeerCommandTest {
+public class ListPeerNotesCommandTest extends AbstractPeerNotesCommandTest {
 
 	@Test
 	public void onUnknownNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
@@ -34,7 +34,7 @@ public class ListPeerNotesCommandTest extends AbstractPeerCommandTest {
 	public void byNodeName() throws InterruptedException, ExecutionException, IOException {
 		Future<Optional<PeerNote>> peerNote = client().listPeerNotes().byName("Friend1").execute();
 		connectAndAssert(() -> matchesListPeerNotes("Friend1"));
-		replyWithPeerNote();
+		replyWithPeerNote("Friend1", "RXhhbXBsZSBUZXh0Lg==");
 		replyWithEndListPeerNotes();
 		assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
 		assertThat(peerNote.get().get().getPeerNoteType(), is(1));
@@ -44,7 +44,7 @@ public class ListPeerNotesCommandTest extends AbstractPeerCommandTest {
 	public void byNodeIdentifier() throws InterruptedException, ExecutionException, IOException {
 		Future<Optional<PeerNote>> peerNote = client().listPeerNotes().byIdentity("id1").execute();
 		connectAndAssert(() -> matchesListPeerNotes("id1"));
-		replyWithPeerNote();
+		replyWithPeerNote("Friend1", "RXhhbXBsZSBUZXh0Lg==");
 		replyWithEndListPeerNotes();
 		assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
 		assertThat(peerNote.get().get().getPeerNoteType(), is(1));
@@ -54,7 +54,7 @@ public class ListPeerNotesCommandTest extends AbstractPeerCommandTest {
 	public void byHostAndPort() throws InterruptedException, ExecutionException, IOException {
 		Future<Optional<PeerNote>> peerNote = client().listPeerNotes().byHostAndPort("1.2.3.4", 5678).execute();
 		connectAndAssert(() -> matchesListPeerNotes("1.2.3.4:5678"));
-		replyWithPeerNote();
+		replyWithPeerNote("Friend1", "RXhhbXBsZSBUZXh0Lg==");
 		replyWithEndListPeerNotes();
 		assertThat(peerNote.get().get().getNoteText(), is("Example Text."));
 		assertThat(peerNote.get().get().getPeerNoteType(), is(1));
@@ -71,17 +71,6 @@ public class ListPeerNotesCommandTest extends AbstractPeerCommandTest {
 		answer(
 				"EndListPeerNotes",
 				"Identifier=" + identifier(),
-				"EndMessage"
-		);
-	}
-
-	private void replyWithPeerNote() throws IOException {
-		answer(
-				"PeerNote",
-				"Identifier=" + identifier(),
-				"NodeIdentifier=Friend1",
-				"NoteText=RXhhbXBsZSBUZXh0Lg==",
-				"PeerNoteType=1",
 				"EndMessage"
 		);
 	}
