@@ -4,9 +4,7 @@ import static net.pterodactylus.fcp.quelaton.RequestProgressMatcher.isRequestPro
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -15,11 +13,9 @@ import static org.hamcrest.Matchers.startsWith;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,16 +28,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import net.pterodactylus.fcp.ARK;
 import net.pterodactylus.fcp.ConfigData;
-import net.pterodactylus.fcp.DSAGroup;
 import net.pterodactylus.fcp.FcpKeyPair;
 import net.pterodactylus.fcp.Key;
 import net.pterodactylus.fcp.NodeData;
-import net.pterodactylus.fcp.NodeRef;
-import net.pterodactylus.fcp.Peer;
 import net.pterodactylus.fcp.PeerNote;
 import net.pterodactylus.fcp.PluginInfo;
 import net.pterodactylus.fcp.Priority;
@@ -54,7 +45,6 @@ import com.google.common.io.Files;
 import com.nitorcreations.junit.runners.NestedRunner;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.After;
 import org.junit.Assert;
@@ -293,63 +283,6 @@ public class DefaultFcpClientTest {
 	}
 
 	public class Peers {
-
-		public class PeerCommands {
-
-			public class RemovePeer {
-
-				@Test
-				public void byName() throws InterruptedException, ExecutionException, IOException {
-					Future<Boolean> peer = fcpClient.removePeer().byName("Friend1").execute();
-					connectAndAssert(() -> matchesRemovePeer("Friend1"));
-					replyWithPeerRemoved("Friend1");
-					assertThat(peer.get(), is(true));
-				}
-
-				@Test
-				public void invalidName() throws InterruptedException, ExecutionException, IOException {
-					Future<Boolean> peer = fcpClient.removePeer().byName("NotFriend1").execute();
-					connectAndAssert(() -> matchesRemovePeer("NotFriend1"));
-					replyWithUnknownNodeIdentifier();
-					assertThat(peer.get(), is(false));
-				}
-
-				@Test
-				public void byIdentity() throws InterruptedException, ExecutionException, IOException {
-					Future<Boolean> peer = fcpClient.removePeer().byIdentity("id1").execute();
-					connectAndAssert(() -> matchesRemovePeer("id1"));
-					replyWithPeerRemoved("id1");
-					assertThat(peer.get(), is(true));
-				}
-
-				@Test
-				public void byHostAndPort() throws InterruptedException, ExecutionException, IOException {
-					Future<Boolean> peer = fcpClient.removePeer().byHostAndPort("1.2.3.4", 5678).execute();
-					connectAndAssert(() -> matchesRemovePeer("1.2.3.4:5678"));
-					replyWithPeerRemoved("Friend1");
-					assertThat(peer.get(), is(true));
-				}
-
-				private Matcher<List<String>> matchesRemovePeer(String nodeIdentifier) {
-					return matchesFcpMessage(
-						"RemovePeer",
-						"Identifier=" + identifier,
-						"NodeIdentifier=" + nodeIdentifier
-					);
-				}
-
-				private void replyWithPeerRemoved(String nodeIdentifier) throws IOException {
-					fcpServer.writeLine(
-						"PeerRemoved",
-						"Identifier=" + identifier,
-						"NodeIdentifier=" + nodeIdentifier,
-						"EndMessage"
-					);
-				}
-
-			}
-
-		}
 
 		public class PeerNoteCommands {
 
