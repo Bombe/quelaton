@@ -309,53 +309,6 @@ public class DefaultFcpClientTest {
 			assertThat(pluginInfo.get().get().isStarted(), is(true));
 		}
 
-		public class RemovePlugin {
-
-			@Test
-			public void removingPluginWorks() throws InterruptedException, ExecutionException, IOException {
-				Future<Boolean> pluginRemoved = fcpClient.removePlugin().plugin(CLASS_NAME).execute();
-				connectAndAssert(this::matchPluginRemovedMessage);
-				replyWithPluginRemoved();
-				assertThat(pluginRemoved.get(), is(true));
-			}
-
-			@Test
-			public void removingPluginWithMaxWaitTimeWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Boolean> pluginRemoved = fcpClient.removePlugin().waitFor(1234).plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchPluginRemovedMessage(), hasItem("MaxWaitTime=1234")));
-				replyWithPluginRemoved();
-				assertThat(pluginRemoved.get(), is(true));
-			}
-
-			@Test
-			public void removingPluginWithPurgeWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Boolean> pluginRemoved = fcpClient.removePlugin().purge().plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchPluginRemovedMessage(), hasItem("Purge=true")));
-				replyWithPluginRemoved();
-				assertThat(pluginRemoved.get(), is(true));
-			}
-
-			private void replyWithPluginRemoved() throws IOException {
-				fcpServer.writeLine(
-					"PluginRemoved",
-					"Identifier=" + identifier,
-					"PluginName=" + CLASS_NAME,
-					"EndMessage"
-				);
-			}
-
-			private Matcher<List<String>> matchPluginRemovedMessage() {
-				return matchesFcpMessage(
-					"RemovePlugin",
-					"Identifier=" + identifier,
-					"PluginName=" + CLASS_NAME
-				);
-			}
-
-		}
-
 		public class GetPluginInfo {
 
 			@Test

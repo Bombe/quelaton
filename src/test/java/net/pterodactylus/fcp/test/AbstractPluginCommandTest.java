@@ -15,6 +15,8 @@ import net.pterodactylus.fcp.PluginInfo;
  */
 public class AbstractPluginCommandTest extends AbstractClientCommandTest {
 
+	protected static final String CLASS_NAME = "foo.plugin.Plugin";
+
 	protected void replyWithPluginInfo() throws Exception {
 		answer(
 				"PluginInfo",

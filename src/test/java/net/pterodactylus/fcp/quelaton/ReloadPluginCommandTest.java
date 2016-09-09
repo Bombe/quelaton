@@ -22,8 +22,6 @@ import org.junit.Test;
  */
 public class ReloadPluginCommandTest extends AbstractPluginCommandTest {
 
-	private static final String CLASS_NAME = "foo.plugin.Plugin";
-
 	@Test
 	public void reloadingPluginWorks() throws Exception {
 		Future<Optional<PluginInfo>> pluginInfo = client().reloadPlugin().plugin(CLASS_NAME).execute();
