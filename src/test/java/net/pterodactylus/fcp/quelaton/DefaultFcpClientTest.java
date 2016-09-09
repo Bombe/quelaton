@@ -4,11 +4,8 @@ import static net.pterodactylus.fcp.quelaton.RequestProgressMatcher.isRequestPro
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,7 +30,6 @@ import net.pterodactylus.fcp.ConfigData;
 import net.pterodactylus.fcp.FcpKeyPair;
 import net.pterodactylus.fcp.Key;
 import net.pterodactylus.fcp.NodeData;
-import net.pterodactylus.fcp.PluginInfo;
 import net.pterodactylus.fcp.Priority;
 import net.pterodactylus.fcp.RequestProgress;
 import net.pterodactylus.fcp.fake.FakeTcpServer;
@@ -277,76 +273,6 @@ public class DefaultFcpClientTest {
 				"RequestURI=" + REQUEST_URI + "",
 				"Identifier=" + identifier,
 				"EndMessage");
-		}
-
-	}
-
-	public class PluginCommands {
-
-		private static final String CLASS_NAME = "foo.plugin.Plugin";
-
-		private void replyWithPluginInfo() throws IOException {
-			fcpServer.writeLine(
-				"PluginInfo",
-				"Identifier=" + identifier,
-				"PluginName=superPlugin",
-				"IsTalkable=true",
-				"LongVersion=1.2.3",
-				"Version=42",
-				"OriginUri=superPlugin",
-				"Started=true",
-				"EndMessage"
-			);
-		}
-
-		private void verifyPluginInfo(Future<Optional<PluginInfo>> pluginInfo)
-		throws InterruptedException, ExecutionException {
-			assertThat(pluginInfo.get().get().getPluginName(), is("superPlugin"));
-			assertThat(pluginInfo.get().get().getOriginalURI(), is("superPlugin"));
-			assertThat(pluginInfo.get().get().isTalkable(), is(true));
-			assertThat(pluginInfo.get().get().getVersion(), is("42"));
-			assertThat(pluginInfo.get().get().getLongVersion(), is("1.2.3"));
-			assertThat(pluginInfo.get().get().isStarted(), is(true));
-		}
-
-		public class GetPluginInfo {
-
-			@Test
-			public void gettingPluginInfoWorks() throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo = fcpClient.getPluginInfo().plugin(CLASS_NAME).execute();
-				connectAndAssert(this::matchGetPluginInfoMessage);
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void gettingPluginInfoWithDetailsWorks()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo =
-					fcpClient.getPluginInfo().detailed().plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchGetPluginInfoMessage(), hasItem("Detailed=true")));
-				replyWithPluginInfo();
-				verifyPluginInfo(pluginInfo);
-			}
-
-			@Test
-			public void protocolErrorIsRecognizedAsFailure()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<PluginInfo>> pluginInfo =
-					fcpClient.getPluginInfo().detailed().plugin(CLASS_NAME).execute();
-				connectAndAssert(() -> allOf(matchGetPluginInfoMessage(), hasItem("Detailed=true")));
-				replyWithProtocolError();
-				assertThat(pluginInfo.get(), is(Optional.empty()));
-			}
-
-			private Matcher<List<String>> matchGetPluginInfoMessage() {
-				return matchesFcpMessage(
-					"GetPluginInfo",
-					"Identifier=" + identifier,
-					"PluginName=" + CLASS_NAME
-				);
-			}
-
 		}
 
 	}
