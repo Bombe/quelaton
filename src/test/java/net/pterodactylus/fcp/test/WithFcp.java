@@ -50,6 +50,10 @@ public class WithFcp implements AutoCloseable {
 		return identifier;
 	}
 
+	public List<String> lines() {
+		return lines;
+	}
+
 	public FcpClient client() {
 		return fcpClient;
 	}

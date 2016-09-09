@@ -23,6 +23,10 @@ public class AbstractClientCommandTest {
 		return fcp.identifier();
 	}
 
+	public List<String> lines() {
+		return fcp.lines();
+	}
+
 	public FcpClient client() {
 		return fcp.client();
 	}
