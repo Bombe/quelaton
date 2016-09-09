@@ -62,13 +62,4 @@ public class ListPeerCommandTest extends AbstractPeerCommandTest {
 		);
 	}
 
-	private void replyWithUnknownNodeIdentifier() throws IOException {
-		answer(
-				"UnknownNodeIdentifier",
-				"Identifier=" + identifier(),
-				"NodeIdentifier=id2",
-				"EndMessage"
-		);
-	}
-
 }

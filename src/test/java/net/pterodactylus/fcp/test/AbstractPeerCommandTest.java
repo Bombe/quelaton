@@ -25,4 +25,13 @@ public class AbstractPeerCommandTest extends AbstractClientCommandTest {
 		answer("EndMessage");
 	}
 
+	protected void replyWithUnknownNodeIdentifier() throws IOException {
+		answer(
+				"UnknownNodeIdentifier",
+				"Identifier=" + identifier(),
+				"NodeIdentifier=id2",
+				"EndMessage"
+		);
+	}
+
 }
