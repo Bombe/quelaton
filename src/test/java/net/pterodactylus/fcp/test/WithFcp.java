@@ -20,14 +20,13 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Rule;
-import org.junit.rules.ExternalResource;
 
 /**
- * JUnit {@link Rule} that manages a fake FCP server and the communication with it, as well as tools for matching messages.
+ * Helper that manages a fake FCP server and the communication with it, as well as tools for matching messages.
  *
  * @author <a href="mailto:bombe@pterodactylus.net">David ‘Bombe’ Roden</a>
  */
-public class WithFcp implements AutoCloseable {
+public class WithFcp {
 
 	private int threadCounter = 0;
 	private final ExecutorService threadPool = Executors.newCachedThreadPool(r -> new Thread(r, "Test-Thread-" + threadCounter++));
@@ -188,9 +187,11 @@ public class WithFcp implements AutoCloseable {
 		};
 	}
 
-	@Override
-	public void close() throws IOException {
+	public void closeFcpServer() throws IOException {
 		fcpServer.close();
+	}
+
+	public void closeThreadpool() {
 		threadPool.shutdown();
 	}
 

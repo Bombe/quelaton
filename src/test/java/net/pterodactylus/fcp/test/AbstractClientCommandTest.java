@@ -88,12 +88,13 @@ public class AbstractClientCommandTest {
 	}
 
 	public void closeFcpServer() throws IOException {
-		fcp.close();
+		fcp.closeFcpServer();
 	}
 
 	@After
 	public void tearDownFcp() throws IOException {
-		fcp.close();
+		fcp.closeFcpServer();
+		fcp.closeThreadpool();
 	}
 
 }
