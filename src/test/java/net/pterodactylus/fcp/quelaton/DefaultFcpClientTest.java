@@ -3,9 +3,7 @@ package net.pterodactylus.fcp.quelaton;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +14,6 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import net.pterodactylus.fcp.FcpKeyPair;
-import net.pterodactylus.fcp.NodeData;
 import net.pterodactylus.fcp.fake.FakeTcpServer;
 
 import com.nitorcreations.junit.runners.NestedRunner;
@@ -255,71 +252,6 @@ public class DefaultFcpClientTest {
 				"RequestURI=" + REQUEST_URI + "",
 				"Identifier=" + identifier,
 				"EndMessage");
-		}
-
-	}
-
-	public class NodeInformation {
-
-		@Test
-		public void defaultFcpClientCanGetNodeInformation() throws InterruptedException, ExecutionException, IOException {
-			Future<NodeData> nodeData = fcpClient.getNode().execute();
-			connectAndAssert(() -> matchesGetNode(false, false, false));
-			replyWithNodeData();
-			assertThat(nodeData.get(), notNullValue());
-			assertThat(nodeData.get().getNodeRef().isOpennet(), is(false));
-		}
-
-		@Test
-		public void defaultFcpClientCanGetNodeInformationWithOpennetRef()
-		throws InterruptedException, ExecutionException, IOException {
-			Future<NodeData> nodeData = fcpClient.getNode().opennetRef().execute();
-			connectAndAssert(() -> matchesGetNode(true, false, false));
-			replyWithNodeData("opennet=true");
-			assertThat(nodeData.get().getVersion().toString(), is("Fred,0.7,1.0,1466"));
-			assertThat(nodeData.get().getNodeRef().isOpennet(), is(true));
-		}
-
-		@Test
-		public void defaultFcpClientCanGetNodeInformationWithPrivateData()
-		throws InterruptedException, ExecutionException, IOException {
-			Future<NodeData> nodeData = fcpClient.getNode().includePrivate().execute();
-			connectAndAssert(() -> matchesGetNode(false, true, false));
-			replyWithNodeData("ark.privURI=SSK@XdHMiRl");
-			assertThat(nodeData.get().getARK().getPrivateURI(), is("SSK@XdHMiRl"));
-		}
-
-		@Test
-		public void defaultFcpClientCanGetNodeInformationWithVolatileData()
-		throws InterruptedException, ExecutionException, IOException {
-			Future<NodeData> nodeData = fcpClient.getNode().includeVolatile().execute();
-			connectAndAssert(() -> matchesGetNode(false, false, true));
-			replyWithNodeData("volatile.freeJavaMemory=205706528");
-			assertThat(nodeData.get().getVolatile("freeJavaMemory"), is("205706528"));
-		}
-
-		private Matcher<List<String>> matchesGetNode(boolean withOpennetRef, boolean withPrivate, boolean withVolatile) {
-			return matchesFcpMessage(
-				"GetNode",
-				"Identifier=" + identifier,
-				"GiveOpennetRef=" + withOpennetRef,
-				"WithPrivate=" + withPrivate,
-				"WithVolatile=" + withVolatile
-			);
-		}
-
-		private void replyWithNodeData(String... additionalLines) throws IOException {
-			fcpServer.writeLine(
-				"NodeData",
-				"Identifier=" + identifier,
-				"ark.pubURI=SSK@3YEf.../ark",
-				"ark.number=78",
-				"auth.negTypes=2",
-				"version=Fred,0.7,1.0,1466",
-				"lastGoodVersion=Fred,0.7,1.0,1466"
-			);
-			fcpServer.writeLine(additionalLines);
-			fcpServer.writeLine("EndMessage");
 		}
 
 	}
