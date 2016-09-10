@@ -1,19 +1,14 @@
 package net.pterodactylus.fcp.quelaton;
 
-import static net.pterodactylus.fcp.quelaton.RequestProgressMatcher.isRequestProgress;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,9 +17,7 @@ import java.util.function.Supplier;
 
 import net.pterodactylus.fcp.ConfigData;
 import net.pterodactylus.fcp.FcpKeyPair;
-import net.pterodactylus.fcp.Key;
 import net.pterodactylus.fcp.NodeData;
-import net.pterodactylus.fcp.RequestProgress;
 import net.pterodactylus.fcp.fake.FakeTcpServer;
 
 import com.nitorcreations.junit.runners.NestedRunner;
@@ -263,100 +256,6 @@ public class DefaultFcpClientTest {
 				"RequestURI=" + REQUEST_URI + "",
 				"Identifier=" + identifier,
 				"EndMessage");
-		}
-
-	}
-
-	public class PutCommands {
-
-		private void replyWithPutSuccessful(String identifier) throws IOException {
-			fcpServer.writeLine(
-				"PutSuccessful",
-				"URI=KSK@foo.txt",
-				"Identifier=" + identifier,
-				"EndMessage"
-			);
-		}
-
-		private void replyWithGeneratedUri() throws IOException {
-			fcpServer.writeLine(
-				"URIGenerated",
-				"Identifier=" + identifier,
-				"URI=KSK@foo.txt",
-				"EndMessage"
-			);
-		}
-
-		private void replyWithSimpleProgress(
-			int total, int required, int failed, int fatallyFailed, int succeeded, int lastProgress,
-			boolean finalizedTotal, int minSuccessFetchBlocks) throws IOException {
-			fcpServer.writeLine(
-				"SimpleProgress",
-				"Identifier=" + identifier,
-				"Total=" + total,
-				"Required=" + required,
-				"Failed=" + failed,
-				"FatallyFailed=" + fatallyFailed,
-				"Succeeded=" + succeeded,
-				"LastProgress=" + lastProgress,
-				"FinalizedTotal=" + finalizedTotal,
-				"MinSuccessFetchBlocks=" + minSuccessFetchBlocks,
-				"EndMessage"
-			);
-		}
-
-		public class ClientPutDiskDir {
-
-			@Test
-			public void commandIsSentCorrectly() throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<Key>> key = fcpClient.clientPutDiskDir().fromDirectory(new File("")).uri("CHK@").execute();
-				connectAndAssert(this::matchesClientPutDiskDir);
-				fcpServer.writeLine("PutSuccessful", "Identifier=" + identifier, "URI=CHK@abc", "EndMessage");
-				assertThat(key.get().get().getKey(), is("CHK@abc"));
-			}
-
-			@Test
-			public void protocolErrorAbortsCommand() throws InterruptedException, ExecutionException, IOException {
-				Future<Optional<Key>> key = fcpClient.clientPutDiskDir().fromDirectory(new File("")).uri("CHK@").execute();
-				connectAndAssert(this::matchesClientPutDiskDir);
-				replyWithProtocolError();
-				assertThat(key.get().isPresent(), is(false));
-			}
-
-			@Test
-			public void progressIsSentToConsumerCorrectly() throws InterruptedException, ExecutionException, IOException {
-				List<RequestProgress> requestProgress = new ArrayList<>();
-				Future<Optional<Key>> key = fcpClient.clientPutDiskDir().onProgress(requestProgress::add)
-					.fromDirectory(new File("")).uri("CHK@").execute();
-				connectAndAssert(() -> matchesClientPutDiskDir("Verbosity=1"));
-				replyWithSimpleProgress(1, 2, 3, 4, 5, 6, true, 8);
-				replyWithSimpleProgress(11, 12, 13, 14, 15, 16, false, 18);
-				replyWithPutSuccessful(identifier);
-				assertThat(key.get().get().getKey(), is("KSK@foo.txt"));
-				assertThat(requestProgress, contains(
-					isRequestProgress(1, 2, 3, 4, 5, 6, true, 8),
-					isRequestProgress(11, 12, 13, 14, 15, 16, false, 18)
-				));
-			}
-
-			@Test
-			public void generatedUriIsSentToConsumerCorrectly() throws InterruptedException, ExecutionException, IOException {
-				List<String> generatedKeys = new ArrayList<>();
-				Future<Optional<Key>> key = fcpClient.clientPutDiskDir().onKeyGenerated(generatedKeys::add)
-					.fromDirectory(new File("")).uri("CHK@").execute();
-				connectAndAssert(this::matchesClientPutDiskDir);
-				replyWithGeneratedUri();
-				replyWithPutSuccessful(identifier);
-				assertThat(key.get().get().getKey(), is("KSK@foo.txt"));
-				assertThat(generatedKeys, contains("KSK@foo.txt"));
-			}
-
-			private Matcher<List<String>> matchesClientPutDiskDir(String... additionalLines) {
-				List<String> lines = new ArrayList<>(Arrays.asList("Identifier=" + identifier, "URI=CHK@", "Filename=" + new File("").getPath()));
-				Arrays.asList(additionalLines).forEach(lines::add);
-				return matchesFcpMessage("ClientPutDiskDir", lines.toArray(new String[lines.size()]));
-			}
-
 		}
 
 	}
