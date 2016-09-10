@@ -15,7 +15,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-import net.pterodactylus.fcp.ConfigData;
 import net.pterodactylus.fcp.FcpKeyPair;
 import net.pterodactylus.fcp.NodeData;
 import net.pterodactylus.fcp.fake.FakeTcpServer;
@@ -256,33 +255,6 @@ public class DefaultFcpClientTest {
 				"RequestURI=" + REQUEST_URI + "",
 				"Identifier=" + identifier,
 				"EndMessage");
-		}
-
-	}
-
-	public class ConfigCommand {
-
-		public class ModifyConfig {
-
-			@Test
-			public void defaultFcpClientCanModifyConfigData()
-			throws InterruptedException, ExecutionException, IOException {
-				Future<ConfigData> newConfigData = fcpClient.modifyConfig().set("foo.bar").to("baz").execute();
-				connectAndAssert(() -> matchesFcpMessage(
-					"ModifyConfig",
-					"Identifier=" + identifier,
-					"foo.bar=baz"
-				));
-				replyWithConfigData("current.foo.bar=baz");
-				assertThat(newConfigData.get().getCurrent("foo.bar"), is("baz"));
-			}
-
-		}
-
-		private void replyWithConfigData(String... additionalLines) throws IOException {
-			fcpServer.writeLine("ConfigData", "Identifier=" + identifier);
-			fcpServer.writeLine(additionalLines);
-			fcpServer.writeLine("EndMessage");
 		}
 
 	}
