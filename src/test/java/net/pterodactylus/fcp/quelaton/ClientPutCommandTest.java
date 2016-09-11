@@ -81,7 +81,7 @@ public class ClientPutCommandTest extends AbstractClientPutCommandTest {
 				hasHead("ClientPut"),
 				hasParameters(1, 2, "TargetFilename=otherName.txt", "UploadFrom=direct", "DataLength=6",
 						"URI=KSK@foo.txt"),
-				hasTail("EndMessage", "Hello")
+				hasTail("Data", "Hello")
 		));
 	}
 
@@ -111,7 +111,7 @@ public class ClientPutCommandTest extends AbstractClientPutCommandTest {
 		return allOf(
 				hasHead("ClientPut"),
 				hasParameters(1, 2, lines.toArray(new String[lines.size()])),
-				hasTail("EndMessage", "Hello")
+				hasTail("Data", "Hello")
 		);
 	}
 
