@@ -160,5 +160,10 @@ public class DefaultFcpClient implements FcpClient {
 		return new FcpPluginMessageCommandImpl(threadPool, this::connect, randomIdentifierGenerator::generate);
 	}
 
+	@Override
+	public WatchFeedsCommand watchFeeds() {
+		return new WatchFeedsCommandImpl(threadPool, this::connect);
+	}
+
 }
 

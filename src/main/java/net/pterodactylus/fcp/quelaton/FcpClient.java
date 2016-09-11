@@ -34,4 +34,6 @@ public interface FcpClient {
 
 	FcpPluginMessageCommand fcpPluginMessage();
 
+	WatchFeedsCommand watchFeeds();
+
 }
