@@ -43,6 +43,10 @@ public class AbstractClientCommandTest {
 		fcp.connectAndAssert(requestMatcher);
 	}
 
+	public void connectAndAssert(String terminator, Supplier<Matcher<List<String>>> requestMatcher) throws InterruptedException, ExecutionException, IOException {
+		fcp.connectAndAssert(terminator, requestMatcher);
+	}
+
 	public String extractIdentifier(List<String> lines) {
 		return fcp.extractIdentifier(lines);
 	}

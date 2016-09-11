@@ -32,4 +32,6 @@ public interface FcpClient {
 
 	SubscribeUskCommand subscribeUsk();
 
+	FcpPluginMessageCommand fcpPluginMessage();
+
 }

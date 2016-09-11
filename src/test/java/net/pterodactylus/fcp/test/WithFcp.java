@@ -66,6 +66,11 @@ public class WithFcp {
 		readMessage(requestMatcher);
 	}
 
+	public void connectAndAssert(String terminator, Supplier<Matcher<List<String>>> requestMatcher) throws InterruptedException, ExecutionException, IOException {
+		connectNode();
+		readMessage(terminator, requestMatcher);
+	}
+
 	public void connectNode() throws InterruptedException, ExecutionException, IOException {
 		fcpServer.connect().get();
 		fcpServer.collectUntil(is("EndMessage"));

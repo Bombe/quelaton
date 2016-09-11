@@ -155,5 +155,10 @@ public class DefaultFcpClient implements FcpClient {
 		return new UnsubscribeUskCommandImpl(threadPool, this::connect);
 	}
 
+	@Override
+	public FcpPluginMessageCommand fcpPluginMessage() {
+		return new FcpPluginMessageCommandImpl(threadPool, this::connect, randomIdentifierGenerator::generate);
+	}
+
 }
 
