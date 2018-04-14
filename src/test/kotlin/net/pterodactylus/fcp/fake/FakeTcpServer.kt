@@ -20,7 +20,7 @@ class FakeTcpServer(private val executorService: ExecutorService) : Closeable {
 				clientSocket.set(TextSocket(serverSocket.accept()))
 			}
 
-	fun collectUntil(lineMatcher: Matcher<String>): List<String> =
+	fun collectUntil(lineMatcher: Matcher<String>): List<String>? =
 			clientSocket.get().collectUntil(lineMatcher)
 
 	fun writeLine(vararg lines: String) =
