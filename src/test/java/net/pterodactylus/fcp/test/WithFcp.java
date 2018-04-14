@@ -37,11 +37,7 @@ public class WithFcp {
 	private String identifier;
 
 	public WithFcp() {
-		try {
-			fcpServer = new FakeTcpServer(threadPool);
-		} catch (IOException ioe1) {
-			throw new RuntimeException(ioe1);
-		}
+		fcpServer = new FakeTcpServer(threadPool);
 		fcpClient = new DefaultFcpClient(threadPool, "localhost", fcpServer.getPort(), () -> "Test");
 	}
 
