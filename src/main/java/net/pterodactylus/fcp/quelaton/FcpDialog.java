@@ -1,5 +1,6 @@
 package net.pterodactylus.fcp.quelaton;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Queue;
@@ -63,7 +64,7 @@ import com.google.common.util.concurrent.MoreExecutors;
  *
  * @author <a href="bombe@freenetproject.org">David ‘Bombe’ Roden</a>
  */
-public abstract class FcpDialog<R> implements AutoCloseable, FcpListener {
+public abstract class FcpDialog<R> implements Closeable, FcpListener {
 
 	private final Object syncObject = new Object();
 	private final ListeningExecutorService executorService;
