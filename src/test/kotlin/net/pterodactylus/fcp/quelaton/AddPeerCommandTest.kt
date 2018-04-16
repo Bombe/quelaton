@@ -24,7 +24,7 @@ class AddPeerCommandTest : AbstractPeerCommandTest() {
 		val peer = client().addPeer().fromFile(File("/tmp/ref.txt")).execute()
 		connectAndAssert { allOf(matchesAddPeer(), hasItem("File=/tmp/ref.txt")) }
 		replyWithPeer("id1")
-		assertThat(peer.get().get().identity, equalTo("id1"))
+		assertThat(peer.get()?.identity, equalTo("id1"))
 	}
 
 	@Test
@@ -32,7 +32,7 @@ class AddPeerCommandTest : AbstractPeerCommandTest() {
 		val peer = client().addPeer().fromURL(URL("http://node.ref/")).execute()
 		connectAndAssert { allOf(matchesAddPeer(), hasItem("URL=http://node.ref/")) }
 		replyWithPeer("id1")
-		assertThat(peer.get().get().identity, equalTo("id1"))
+		assertThat(peer.get()?.identity, equalTo("id1"))
 	}
 
 	@Test
@@ -54,7 +54,7 @@ class AddPeerCommandTest : AbstractPeerCommandTest() {
 			))
 		}
 		replyWithPeer("id1")
-		assertThat(peer.get().get().identity, equalTo("id1"))
+		assertThat(peer.get()?.identity, equalTo("id1"))
 	}
 
 	private fun createNodeRef() =
@@ -74,7 +74,7 @@ class AddPeerCommandTest : AbstractPeerCommandTest() {
 		val peer = client().addPeer().fromFile(File("/tmp/ref.txt")).execute()
 		connectAndAssert { allOf(matchesAddPeer(), hasItem("File=/tmp/ref.txt")) }
 		replyWithProtocolError()
-		assertThat(peer.get().isPresent, equalTo(false))
+		assertThat(peer.get(), nullValue())
 	}
 
 }

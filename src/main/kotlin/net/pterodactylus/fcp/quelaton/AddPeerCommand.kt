@@ -12,8 +12,8 @@ import net.pterodactylus.fcp.Peer
  */
 interface AddPeerCommand {
 
-	fun fromFile(file: File): Executable<Optional<Peer>>
-	fun fromURL(url: URL): Executable<Optional<Peer>>
-	fun fromNodeRef(nodeRef: NodeRef): Executable<Optional<Peer>>
+	fun fromFile(file: File): Executable<Peer?>
+	fun fromURL(url: URL): Executable<Peer?>
+	fun fromNodeRef(nodeRef: NodeRef): Executable<Peer?>
 
 }
