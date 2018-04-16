@@ -3,20 +3,19 @@ package net.pterodactylus.fcp.quelaton
 import com.google.common.util.concurrent.*
 import net.pterodactylus.fcp.*
 import net.pterodactylus.fcp.FcpUtils.*
+import net.pterodactylus.fcp.quelaton.ClientGetCommand.*
+import net.pterodactylus.fcp.util.*
 import java.io.*
-import java.util.*
 import java.util.concurrent.*
 import java.util.function.*
 
 /**
  * Implementation of the [ClientGetCommand].
- *
- * @author [David ‘Bombe’ Roden](mailto:bombe@pterodactylus.net)
  */
 internal class ClientGetCommandImpl(threadPool: ExecutorService, private val connectionSupplier: ConnectionSupplier, private val identifierGenerator: Supplier<String>) : ClientGetCommand {
 
-	private val threadPool: ListeningExecutorService
-	private val onRedirects = ArrayList<Consumer<String>>()
+	private val threadPool: ListeningExecutorService = MoreExecutors.listeningDecorator(threadPool)
+	private val onRedirects = mutableListOf<(String) -> Unit>()
 
 	private var ignoreDataStore: Boolean = false
 	private var dataStoreOnly: Boolean = false
@@ -25,113 +24,67 @@ internal class ClientGetCommandImpl(threadPool: ExecutorService, private val con
 	private var realTime: Boolean = false
 	private var global: Boolean = false
 
-	init {
-		this.threadPool = MoreExecutors.listeningDecorator(threadPool)
+	override fun onRedirect(newUri: (String) -> Unit) = apply {
+		onRedirects.add(newUri)
 	}
 
-	override fun onRedirect(onRedirect: Consumer<String>): ClientGetCommand {
-		onRedirects.add(onRedirect)
-		return this
-	}
-
-	override fun ignoreDataStore(): ClientGetCommand {
+	override fun ignoreDataStore() = apply {
 		ignoreDataStore = true
-		return this
 	}
 
-	override fun dataStoreOnly(): ClientGetCommand {
+	override fun dataStoreOnly() = apply {
 		dataStoreOnly = true
-		return this
 	}
 
-	override fun maxSize(maxSize: Long): ClientGetCommand {
+	override fun maxSize(maxSize: Long) = apply {
 		this.maxSize = maxSize
-		return this
 	}
 
-	override fun priority(priority: Priority): ClientGetCommand {
+	override fun priority(priority: Priority) = apply {
 		this.priority = priority
-		return this
 	}
 
-	override fun realTime(): ClientGetCommand {
+	override fun realTime() = apply {
 		realTime = true
-		return this
 	}
 
-	override fun global(): ClientGetCommand {
+	override fun global() = apply {
 		global = true
-		return this
 	}
 
-	override fun uri(uri: String): Executable<Optional<ClientGetCommand.Data>> {
-		return Executable { threadPool.submit<Optional<ClientGetCommand.Data>> { execute(uri) } }
-	}
+	override fun uri(uri: String) =
+			Executable { threadPool.submit<Data?> { execute(uri) } }
 
-	@Throws(InterruptedException::class, ExecutionException::class, IOException::class)
-	private fun execute(uri: String): Optional<ClientGetCommand.Data> {
-		val clientGet = createClientGetCommand(identifierGenerator.get(), uri)
-		ClientGetDialog().use { clientGetDialog -> return clientGetDialog.send(clientGet).get() }
-	}
+	private fun execute(uri: String) =
+			ClientGetDialog().use { clientGetDialog ->
+				clientGetDialog.send(createClientGetCommand(identifierGenerator.get(), uri)).get()
+			}
 
-	private fun createClientGetCommand(identifier: String?, uri: String): ClientGet {
-		val clientGet = ClientGet(uri, identifier, ReturnType.direct)
-		if (ignoreDataStore) {
-			clientGet.setIgnoreDataStore(true)
-		}
-		if (dataStoreOnly) {
-			clientGet.setDataStoreOnly(true)
-		}
-		if (maxSize != null) {
-			clientGet.setMaxSize(maxSize!!)
-		}
-		if (priority != null) {
-			clientGet.setPriority(priority)
-		}
-		if (realTime) {
-			clientGet.setRealTimeFlag(true)
-		}
-		if (global) {
-			clientGet.setGlobal(true)
-		}
-		return clientGet
-	}
+	private fun createClientGetCommand(identifier: String?, uri: String) =
+			ClientGet(uri, identifier, ReturnType.direct).apply {
+				ignoreDataStore.ifTrue { setIgnoreDataStore(true) }
+				dataStoreOnly.ifTrue { setDataStoreOnly(true) }
+				maxSize?.also { setMaxSize(it) }
+				priority?.also { setPriority(it) }
+				realTime.ifTrue { setRealTimeFlag(true) }
+				global.ifTrue { setGlobal(true) }
+			}
 
-	private inner class ClientGetDialog @Throws(IOException::class)
-	constructor() : FcpDialog<Optional<ClientGetCommand.Data>>(this@ClientGetCommandImpl.threadPool, this@ClientGetCommandImpl.connectionSupplier.get(), Optional.empty()) {
+	private inner class ClientGetDialog : FcpDialog<Data?>(threadPool, connectionSupplier.get()) {
 
 		override fun consumeAllData(allData: AllData) {
-			synchronized(this) {
-				val contentType = allData.contentType
-				val dataLength = allData.dataLength
-				try {
-					val payload = TempInputStream(allData.payloadInputStream, dataLength)
-					result = Optional.of(createData(contentType, dataLength, payload))
-				} catch (e: IOException) {
-					// TODO – logging
-					finish()
-				}
-
-			}
-		}
-
-		private fun createData(contentType: String, dataLength: Long, payload: InputStream): ClientGetCommand.Data {
-			return object : ClientGetCommand.Data {
-				override val mimeType: String
-					get() = contentType
-
-				override val inputStream: InputStream
-					get() = payload
-
-				override fun size(): Long {
-					return dataLength
-				}
+			try {
+				val payload = TempInputStream(allData.payloadInputStream, allData.dataLength)
+				result = Data(allData.contentType, payload, allData.dataLength)
+			} catch (e: IOException) {
+				// TODO – logging
+				finish()
 			}
 		}
 
 		override fun consumeGetFailed(getFailed: GetFailed) {
 			if (getFailed.code == 27) {
-				onRedirects.forEach { onRedirect -> onRedirect.accept(getFailed.redirectURI) }
+				onRedirects.forEach { newUri -> newUri(getFailed.redirectURI) }
 				sendMessage(createClientGetCommand(identifier, getFailed.redirectURI))
 			} else {
 				finish()
