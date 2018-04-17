@@ -8,17 +8,17 @@ Quelaton was originally begun in Java but is now being converted and continued i
 
 ## Using quelaton
 
-1. Obtain an instance of an `FcpClient`.
+Obtain an instance of an `FcpClient`.
 > `val fcpClient = DefaultFcpClient(threadPool, "localhost", 9481) { "client" }`
 
-1. Create the command you want to use…
+Create the command you want to use…
 > `val nodeDataFuture = fcpClient.getNode()`
 
-1. …set parameters…
+…set parameters…
 > `    .includePrivate()`
 
-1. …and execute the command.
+…and execute the command.
 > `    .execute()`
 
-1. This will run the command in the given threadpool. The resulting `Future` can be asked for the result at any time; it will block until the command is finished.
+This will run the command in the given threadpool. The resulting `Future` can be asked for the result at any time; it will block until the command is finished.
 > `println(nodeDataFuture.get().version)`
